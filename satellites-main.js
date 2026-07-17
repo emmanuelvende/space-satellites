@@ -48,6 +48,34 @@ const earthMaterial = new THREE.MeshBasicMaterial({
 const earth = new THREE.Mesh(earthGeometry, earthMaterial);
 scene.add(earth);
 
+// ==========================================
+// --- REPÈRE ECI (Axes X, Y, Z) ---
+// ==========================================
+// On crée un repère de 12 000 km de long pour qu'il dépasse largement de la Terre
+const axesHelper = new THREE.AxesHelper(12000); 
+scene.add(axesHelper);
+
+// ==========================================
+// --- L'ÉQUATEUR ---
+// ==========================================
+// On crée un anneau fin (Torus) légèrement plus large que la Terre
+// Rayon interne : 6371 + 20km (pour pas qu'il rentre dans le maillage)
+// Épaisseur du tube : 30km (pour être visible de loin)
+const equatorGeometry = new THREE.TorusGeometry(earthRadius + 20, 30, 16, 100);
+
+const equatorMaterial = new THREE.MeshBasicMaterial({ 
+    color: 0xffff00, // Jaune vif pour bien le distinguer
+    transparent: true,
+    opacity: 0.8
+});
+
+const equator = new THREE.Mesh(equatorGeometry, equatorMaterial);
+
+// Par défaut, l'anneau est dressé verticalement (sur le plan X-Y).
+// On le couche à plat (rotation de 90° = Math.PI / 2 sur l'axe X) pour qu'il coupe la Terre au centre.
+equator.rotation.x = Math.PI / 2;
+
+scene.add(equator);
 
 
 // --- LE SATELLITE ---
