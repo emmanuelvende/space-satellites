@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualisation Satellite 3D</title>
+    <link href="./satellites-style.css" rel="stylesheet">
+</head>
+
+<body>
+    <div id="top-banner">
+        <div id="banner-left-info">
+            <div id="info1" class="info-item"><strong>Satellite :</strong> &lt;todo&gt;</div>
+            <div id="info2" class="info-item"><strong>Param 1 :</strong> &lt;todo&gt;</div>
+            <div id="info3" class="info-item"><strong>Param 2 :</strong> &lt;todo&gt;</div>
+        </div>
+
+        <img id="banner-img" src="./banner.jpg">
+    </div>
+
+    <!-- Import de Three.js et OrbitControls pour pouvoir tourner autour de la Terre -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+
+
+    <script type="module" src="./satellites-main.js"> </script>
+</body>
+
+</html>
