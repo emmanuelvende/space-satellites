@@ -53,11 +53,30 @@ scene.add(sunLight);
 const earthRadius = 6371;
 const earthGeometry = new THREE.SphereGeometry(earthRadius, 64, 32); // 64 segments horizontaux et 32 verticaux pour une belle rondeur lisse
 
-const earthMaterial = new THREE.MeshBasicMaterial({
-    color: 0x0060ff,
+// const earthMaterial = new THREE.MeshBasicMaterial({
+//     color: 0x0060ff,
+//     wireframe: false,
+//     transparent: true,
+//     opacity: 0.2
+// });
+
+// const earth = new THREE.Mesh(earthGeometry, earthMaterial);
+// scene.add(earth);
+// ==========================================
+// --- TEXTURE ET MATÉRIAU DE LA TERRE ---
+// ==========================================
+
+// 1. On charge la texture (Image de la Terre en haute définition)
+const textureLoader = new THREE.TextureLoader();
+const earthTexture = textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_atmos_2048.jpg');
+
+// 2. On utilise MeshPhongMaterial pour qu'elle réagisse magnifiquement à ton SunLight
+const earthMaterial = new THREE.MeshPhongMaterial({
+    map: earthTexture,
     wireframe: false,
     transparent: true,
-    opacity: 0.2
+    opacity: 0.8,
+    shininess: 15
 });
 
 const earth = new THREE.Mesh(earthGeometry, earthMaterial);
@@ -67,7 +86,7 @@ scene.add(earth);
 // --- REPÈRE ECI (Axes X, Y, Z) ---
 // ==========================================
 // On crée un repère de 12 000 km de long pour qu'il dépasse largement de la Terre
-const axesHelper = new THREE.AxesHelper(12000); 
+const axesHelper = new THREE.AxesHelper(12000);
 scene.add(axesHelper);
 
 // Étiquette pour l'axe Nord (Y)
@@ -77,7 +96,7 @@ scene.add(labelN);
 
 // Étiquette pour l'axe Vernal (X)
 const labelX = createLabel('ECI X (0°)', '#ff0000');
-labelX.position.set(12500, 0, 0); 
+labelX.position.set(12500, 0, 0);
 scene.add(labelX);
 
 // ==========================================
@@ -88,7 +107,7 @@ scene.add(labelX);
 // Épaisseur du tube : 30km (pour être visible de loin)
 const equatorGeometry = new THREE.TorusGeometry(earthRadius + 20, 30, 16, 100);
 
-const equatorMaterial = new THREE.MeshBasicMaterial({ 
+const equatorMaterial = new THREE.MeshBasicMaterial({
     color: 0xffff00, // Jaune vif pour bien le distinguer
     transparent: true,
     opacity: 0.8
@@ -112,7 +131,7 @@ scene.add(equator);
 const axesHelperECF = new THREE.AxesHelper(9000);
 
 // TRÈS IMPORTANT : On l'ajoute à "earth", pas à "scene" !
-earth.add(axesHelperECF); 
+earth.add(axesHelperECF);
 
 
 
@@ -139,7 +158,7 @@ earth.add(labelGreenwich);
 
 // Longitude 90° Est
 const label90E = createLabel('90° E', '#00ffaa');
-label90E.position.set(0, 0, -(earthRadius + 250)); 
+label90E.position.set(0, 0, -(earthRadius + 250));
 earth.add(label90E);
 
 // Parallèle 45° Nord (par exemple)
@@ -147,7 +166,7 @@ const label45N = createLabel('45° N', '#ffff00');
 // On calcule la position en hauteur pour 45°
 const h45 = earthRadius * Math.sin(Math.PI / 4);
 const r45 = earthRadius * Math.cos(Math.PI / 4);
-label45N.position.set(r45 + 250, h45, 0); 
+label45N.position.set(r45 + 250, h45, 0);
 earth.add(label45N);
 
 
@@ -190,7 +209,7 @@ const divInfo1 = document.getElementById("info1");
 const divInfo2 = document.getElementById("info2");
 const divInfo3 = document.getElementById("info3");
 
-
+const clock = new THREE.Clock();
 
 function animate() {
     requestAnimationFrame(animate);
@@ -244,9 +263,16 @@ function animate() {
         satelliteGd.height + earthRadius);
     satelliteGrobThreeJS.position.copy(newPos);
 
-    
-    // Légère rotation de la Terre
-    earth.rotation.y += 0.0002;
+    // === Rotation terrestre ===
+    // 1. Récupérer le temps écoulé en secondes depuis la dernière image (ex: ~0.016s en 60fps)
+    const deltaTime = clock.getDelta();
+
+    // 2. Vitesse angulaire de la Terre (en radians par seconde)
+    // 2 * Math.PI / 86164.1 secondes du jour sidéral
+    const earthAngularVelocity = (2 * Math.PI) / 86164.1;
+
+    // 3. Appliquer la rotation exacte proportionnelle au temps écoulé
+    earth.rotation.y += earthAngularVelocity * deltaTime;
 
     controls.update();
     wegGLRenderer.render(scene, camera);
