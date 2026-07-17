@@ -34,13 +34,15 @@ sunLight.position.set(-10000, 0, 0);
 scene.add(sunLight);
 
 
+// ==========================================
 // --- LA TERRE ---
+// ==========================================
 const earthRadius = 6371;
-const earthGeometry = new THREE.IcosahedronGeometry(earthRadius, 15);
+const earthGeometry = new THREE.SphereGeometry(earthRadius, 64, 32); // 64 segments horizontaux et 32 verticaux pour une belle rondeur lisse
 
 const earthMaterial = new THREE.MeshBasicMaterial({
-    color: 0x00ffff,
-    wireframe: true,
+    color: 0x0060ff,
+    wireframe: false,
     transparent: true,
     opacity: 0.2
 });
@@ -76,6 +78,38 @@ const equator = new THREE.Mesh(equatorGeometry, equatorMaterial);
 equator.rotation.x = Math.PI / 2;
 
 scene.add(equator);
+
+
+
+// ==========================================
+// --- REPERE ECF (Tourne avec la Terre) ---
+// ==========================================
+// On crée un deuxième AxesHelper. Pour le différencier du ECI, 
+// on le fait un peu plus court (9000 km)
+const axesHelperECF = new THREE.AxesHelper(9000);
+
+// 🔴 TRÈS IMPORTANT : On l'ajoute à "earth", pas à "scene" !
+earth.add(axesHelperECF); 
+
+
+
+// ==========================================
+// --- GRILLE DES MÉRIDIENS ET PARALLÈLES ---
+// ==========================================
+const gridGeometry = new THREE.SphereGeometry(earthRadius + 50, 36, 36);
+const edges = new THREE.EdgesGeometry(gridGeometry);
+const gridMaterial = new THREE.LineBasicMaterial({
+    color: 0x00ffaa,
+    transparent: true,
+    opacity: 0.4
+});
+
+const earthGrid = new THREE.LineSegments(edges, gridMaterial);
+
+// 🔴 On l'ajoute aussi à "earth" pour qu'il tourne avec !
+earth.add(earthGrid);
+
+
 
 
 // --- LE SATELLITE ---
@@ -170,10 +204,10 @@ function animate() {
         satelliteGd.height + earthRadius);
     satelliteGrobThreeJS.position.copy(newPos);
 
-    /*
+    
     // Légère rotation de la Terre
-    earth.rotation.y += 0.002;
-*/
+    earth.rotation.y += 0.0002;
+
     controls.update();
     renderer.render(scene, camera);
 }
