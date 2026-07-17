@@ -12,10 +12,9 @@ import {
 
 import { ommWorldview3 } from './satellites-worldview3.js';
 
-// --- 1. CONFIGURATION DE LA SCÈNE ---
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(0, 5, 12);
+// camera.position.set(0, 500, 7000);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -25,47 +24,48 @@ document.body.appendChild(renderer.domElement);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 
-// --- 2. LUMIÈRES ---
+
+// --- LUMIERES ---
 const ambientLight = new THREE.AmbientLight(0x333333);
 scene.add(ambientLight);
 
 const sunLight = new THREE.DirectionalLight(0xffffff, 1.5);
-sunLight.position.set(5, 3, 5);
+sunLight.position.set(-10000, 0, 0);
 scene.add(sunLight);
 
-// --- 3. LA TERRE (Sphère de rayon 4) ---
-const earthRadius = 4;
-const earthGeometry = new THREE.SphereGeometry(earthRadius, 64, 64);
 
-// Texture de base simplifiée en couleur (vous pourrez y ajouter une vraie image de la Terre plus tard)
-const earthMaterial = new THREE.MeshPhongMaterial({
-    color: 0x154360,
-    wireframe: true // Mode grille pour bien voir l'effet 3D et le mouvement
+// --- LA TERRE ---
+const earthRadius = 6371;
+const earthGeometry = new THREE.IcosahedronGeometry(earthRadius, 15);
+
+const earthMaterial = new THREE.MeshBasicMaterial({
+    color: 0x00ffff,
+    wireframe: true,
+    transparent: true,
+    opacity: 0.2
 });
+
 const earth = new THREE.Mesh(earthGeometry, earthMaterial);
 scene.add(earth);
 
-// --- 4. LE SATELLITE ---
-const satGeometry = new THREE.SphereGeometry(0.15, 16, 16);
-const satMaterial = new THREE.MeshBasicMaterial({ color: 0x00ffcc });
+
+
+// --- LE SATELLITE ---
+const satSize = 500; // 500 km de côté :)
+const satGeometry = new THREE.BoxGeometry(satSize, satSize, satSize);
+const satMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
 const satelliteGrobThreeJS = new THREE.Mesh(satGeometry, satMaterial);
+
 scene.add(satelliteGrobThreeJS);
 
-// Tracé de l'orbite (Optionnel, pour le style)
-const orbitMaterial = new THREE.LineBasicMaterial({ color: 0x444444 });
-const orbitPoints = [];
-// On dessine un cercle d'orbite à une altitude fixe de 1.5 unités au-dessus de la Terre
-const orbitalRadius = earthRadius + 1.5;
-for (let i = 0; i <= 64; i++) {
-    const angle = (i / 64) * Math.PI * 2;
-    orbitPoints.push(new THREE.Vector3(Math.cos(angle) * orbitalRadius, 0, Math.sin(angle) * orbitalRadius));
-}
-const orbitGeometry = new THREE.BufferGeometry().setFromPoints(orbitPoints);
-const orbitLine = new THREE.Line(orbitGeometry, orbitMaterial);
-scene.add(orbitLine);
+camera.position.set(15000, 10000, 15000);
+camera.near = 10;
+camera.far = 50000;
+camera.updateProjectionMatrix(); // appliquer chgt de clipping
+controls.target.set(0, 0, 0);
+controls.update();
 
-// Inclinaison de l'orbite de 45 degrés pour qu'elle ne soit pas plate
-orbitLine.rotation.x = Math.PI / 4;
+
 
 // --- 5. FONCTION DE CONVERSION COORDONNÉES ---
 function getSatellitePosition(lat, lon, alt) {
@@ -79,12 +79,6 @@ function getSatellitePosition(lat, lon, alt) {
         r * Math.sin(phi) * Math.cos(theta)
     );
 }
-
-// --- 6. BOUCLE D'ANIMATION ---
-let longitude = 0;
-const latitude = 45; // On garde une latitude fixe pour cette démo d'orbite simple
-const altitude = 1.5; // Altitude par rapport à la surface
-
 
 
 const satRecWorldview3 = json2satrec(ommWorldview3);
@@ -142,12 +136,16 @@ function animate() {
 
 
     // Mise à jour de la position du satellite
-    const newPos = latLonToVector3(satelliteGd.latitude, satelliteGd.longitude, satelliteGd.height);
+    const newPos = latLonToVector3(
+        satelliteGd.latitude,
+        satelliteGd.longitude,
+        satelliteGd.height + earthRadius);
     satelliteGrobThreeJS.position.copy(newPos);
 
+    /*
     // Légère rotation de la Terre
     earth.rotation.y += 0.002;
-
+*/
     controls.update();
     renderer.render(scene, camera);
 }
