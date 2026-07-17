@@ -11,10 +11,6 @@ import {
 } from 'https://esm.sh/satellite.js@6.0.2';
 
 import { ommWorldview3 } from './satellites-worldview3.js';
-// <script type="module" src="./satellites-worldview3.js"> </script>
-
-
-
 
 // --- 1. CONFIGURATION DE LA SCÈNE ---
 const scene = new THREE.Scene();
@@ -103,8 +99,6 @@ const divInfo3 = document.getElementById("info3");
 function animate() {
     requestAnimationFrame(animate);
 
-
-
     const now = new Date();
     divInfo1.innerHTML = `<strong>Date:</strong> ${now.toString()}`;
 
@@ -112,10 +106,10 @@ function animate() {
     const positionECI = positionAndVelocityECI.position;
 
     divInfo2.innerHTML = `
-    <p>ECI (Earth Centered Inertial):</p>
-    <p>X: ${positionECI.x.toFixed(2)}km</p>
-    <p>Y: ${positionECI.y.toFixed(2)}km</p>
-    <p>Z: ${positionECI.z.toFixed(2)}km</p>
+    <div>ECI (Earth Centered Inertial):</div>
+    <div>X: ${positionECI.x.toFixed(2)}km</div>
+    <div>Y: ${positionECI.y.toFixed(2)}km</div>
+    <div>Z: ${positionECI.z.toFixed(2)}km</div>
     `;
 
     const poitiersGd = {
@@ -134,10 +128,10 @@ function animate() {
     }
 
     divInfo3.innerHTML = `
-    <p>Earth cordinates</p>
-    <p>lat: ${satelliteGd.latitude.toFixed(2)}°</p>
-    <p>long: ${satelliteGd.longitude.toFixed(2)}°</p>
-    <p>alt: ${satelliteGd.height.toFixed(2)}km</p>
+    <div>Earth cordinates</div>
+    <div>lat: ${satelliteGd.latitude.toFixed(2)}°</div>
+    <div>long: ${satelliteGd.longitude.toFixed(2)}°</div>
+    <div>alt: ${satelliteGd.height.toFixed(2)}km</div>
     `;
 
 
