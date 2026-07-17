@@ -100,16 +100,21 @@ function animate() {
     requestAnimationFrame(animate);
 
     const now = new Date();
-    divInfo1.innerHTML = `<strong>Date:</strong> ${now.toString()}`;
+    divInfo1.innerHTML = `
+    <div>DATE: <strong>${now.toLocaleString()}</strong></div>
+    <div>NAME: <strong>${ommWorldview3.OBJECT_NAME}</strong></div>
+    <div>ID: <strong>${ommWorldview3.OBJECT_ID}</strong></div>
+    <div>NORAD: <strong>${ommWorldview3.NORAD_CAT_ID}</strong></div>
+    `;
 
     const positionAndVelocityECI = propagate(satRecWorldview3, now);
     const positionECI = positionAndVelocityECI.position;
 
     divInfo2.innerHTML = `
     <div>ECI (Earth Centered Inertial):</div>
-    <div>X: ${positionECI.x.toFixed(2)}km</div>
-    <div>Y: ${positionECI.y.toFixed(2)}km</div>
-    <div>Z: ${positionECI.z.toFixed(2)}km</div>
+    <div>X: <strong>${positionECI.x.toFixed(2)}</strong> km</div>
+    <div>Y: <strong>${positionECI.y.toFixed(2)}</strong> km</div>
+    <div>Z: <strong>${positionECI.z.toFixed(2)}</strong> km</div>
     `;
 
     const poitiersGd = {
@@ -129,9 +134,9 @@ function animate() {
 
     divInfo3.innerHTML = `
     <div>Earth cordinates</div>
-    <div>lat: ${satelliteGd.latitude.toFixed(2)}°</div>
-    <div>long: ${satelliteGd.longitude.toFixed(2)}°</div>
-    <div>alt: ${satelliteGd.height.toFixed(2)}km</div>
+    <div>lat: <strong>${satelliteGd.latitude.toFixed(2)}</strong>°</div>
+    <div>long: <strong>${satelliteGd.longitude.toFixed(2)}</strong>°</div>
+    <div>alt: <strong>${satelliteGd.height.toFixed(2)}</strong> km</div>
     `;
 
 
