@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import {
     json2satrec,
     propagate,
@@ -12,17 +13,29 @@ import {
 
 import { ommWorldview3 } from './satellites-worldview3.js';
 
+// --- SCENE ---
 const scene = new THREE.Scene();
+
+// --- CAMERA ---
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-// camera.position.set(0, 500, 7000);
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(window.devicePixelRatio);
-document.body.appendChild(renderer.domElement);
+// --- RENDERER WEBGL ---
+const wegGLRenderer = new THREE.WebGLRenderer({ antialias: true });
+wegGLRenderer.setSize(window.innerWidth, window.innerHeight);
+wegGLRenderer.setPixelRatio(window.devicePixelRatio);
+document.body.appendChild(wegGLRenderer.domElement);
 
-const controls = new OrbitControls(camera, renderer.domElement);
+// --- ORBIT CONTROLS ---
+const controls = new OrbitControls(camera, wegGLRenderer.domElement);
 controls.enableDamping = true;
+
+// --- RENDERER TEXTE HTML SUPERPOSE ---
+const labelRenderer = new CSS2DRenderer();
+labelRenderer.setSize(window.innerWidth, window.innerHeight);
+labelRenderer.domElement.style.position = 'absolute';
+labelRenderer.domElement.style.top = '0px';
+labelRenderer.domElement.style.pointerEvents = 'none'; // Pour que la souris passe à travers et contrôle la 3D
+document.body.appendChild(labelRenderer.domElement);
 
 
 // --- LUMIERES ---
@@ -57,6 +70,16 @@ scene.add(earth);
 const axesHelper = new THREE.AxesHelper(12000); 
 scene.add(axesHelper);
 
+// Étiquette pour l'axe Nord (Y)
+const labelN = createLabel('ECI NORD (Y)', '#00ff00');
+labelN.position.set(0, 12500, 0); // Placé juste au bout de l'axe vert
+scene.add(labelN);
+
+// Étiquette pour l'axe Vernal (X)
+const labelX = createLabel('ECI X (0°)', '#ff0000');
+labelX.position.set(12500, 0, 0); 
+scene.add(labelX);
+
 // ==========================================
 // --- L'ÉQUATEUR ---
 // ==========================================
@@ -88,7 +111,7 @@ scene.add(equator);
 // on le fait un peu plus court (9000 km)
 const axesHelperECF = new THREE.AxesHelper(9000);
 
-// 🔴 TRÈS IMPORTANT : On l'ajoute à "earth", pas à "scene" !
+// TRÈS IMPORTANT : On l'ajoute à "earth", pas à "scene" !
 earth.add(axesHelperECF); 
 
 
@@ -106,9 +129,26 @@ const gridMaterial = new THREE.LineBasicMaterial({
 
 const earthGrid = new THREE.LineSegments(edges, gridMaterial);
 
-// 🔴 On l'ajoute aussi à "earth" pour qu'il tourne avec !
+// On l'ajoute aussi à "earth" pour qu'il tourne avec !
 earth.add(earthGrid);
 
+// Méridien de Greenwich (0° Longitude, posé sur l'Équateur)
+const labelGreenwich = createLabel('0° (Greenwich)', '#00ffaa');
+labelGreenwich.position.set(earthRadius + 250, 0, 0); // Axe X de la Terre
+earth.add(labelGreenwich);
+
+// Longitude 90° Est
+const label90E = createLabel('90° E', '#00ffaa');
+label90E.position.set(0, 0, -(earthRadius + 250)); 
+earth.add(label90E);
+
+// Parallèle 45° Nord (par exemple)
+const label45N = createLabel('45° N', '#ffff00');
+// On calcule la position en hauteur pour 45°
+const h45 = earthRadius * Math.sin(Math.PI / 4);
+const r45 = earthRadius * Math.cos(Math.PI / 4);
+label45N.position.set(r45 + 250, h45, 0); 
+earth.add(label45N);
 
 
 
@@ -209,7 +249,8 @@ function animate() {
     earth.rotation.y += 0.0002;
 
     controls.update();
-    renderer.render(scene, camera);
+    wegGLRenderer.render(scene, camera);
+    labelRenderer.render(scene, camera);
 }
 
 animate();
@@ -218,7 +259,8 @@ animate();
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    wegGLRenderer.setSize(window.innerWidth, window.innerHeight);
+    labelRenderer.setSize(window.innerWidth, window.innerHeight);
 });
 
 
@@ -238,4 +280,23 @@ function latLonToVector3(lat, lon, radius) {
     const z = radius * Math.sin(phi) * Math.cos(theta);
 
     return new THREE.Vector3(x, y, z);
+}
+
+
+
+// Création étiquette tectuelle
+function createLabel(text, color = '#ffffff') {
+    const div = document.createElement('div');
+    div.className = 'spatial-label';
+    div.textContent = text;
+    div.style.color = color;
+    div.style.fontFamily = 'monospace';
+    div.style.fontSize = '12px';
+    div.style.padding = '2px 4px';
+    div.style.background = 'rgba(0, 0, 0, 0.6)';
+    div.style.borderRadius = '3px';
+    div.style.border = `1px solid ${color}`;
+
+    const label = new CSS2DObject(div);
+    return label;
 }
