@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+import { CSS2DRenderer } from 'three/addons/renderers/CSS2DRenderer.js';
 import {
     json2satrec,
     propagate,
@@ -14,6 +14,8 @@ import {
 } from 'https://esm.sh/satellite.js@6.0.2';
 
 import { ommWorldview3 } from './sats-info.js';
+import { setupEarthGrid } from './earth-grid.js';
+import { createLabel } from './utils.js';
 
 // --- SCENE ---
 const scene = new THREE.Scene();
@@ -131,7 +133,7 @@ const axesHelperECF = new THREE.AxesHelper(9000);
 earth.add(axesHelperECF);
 
 
-
+/*
 // ==========================================
 // --- GRILLE DES MÉRIDIENS ET PARALLÈLES ---
 // ==========================================
@@ -165,8 +167,8 @@ const h45 = earthRadius * Math.sin(Math.PI / 4);
 const r45 = earthRadius * Math.cos(Math.PI / 4);
 label45N.position.set(r45 + 250, h45, 0);
 earth.add(label45N);
-
-
+*/
+setupEarthGrid(earth, earthRadius);
 
 // --- LE SATELLITE ---
 const satSize = 500; // 500 km de côté :)
@@ -307,20 +309,3 @@ function latLonToVector3(lat, lon, radius) {
     return new THREE.Vector3(x, y, z);
 }
 
-
-// Création étiquette tectuelle
-function createLabel(text, color = '#ffffff') {
-    const div = document.createElement('div');
-    div.className = 'spatial-label';
-    div.textContent = text;
-    div.style.color = color;
-    div.style.fontFamily = 'monospace';
-    div.style.fontSize = '12px';
-    div.style.padding = '2px 4px';
-    div.style.background = 'rgba(0, 0, 0, 0.6)';
-    div.style.borderRadius = '3px';
-    div.style.border = `1px solid ${color}`;
-
-    const label = new CSS2DObject(div);
-    return label;
-}
