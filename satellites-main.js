@@ -8,7 +8,9 @@ import {
     degreesToRadians,
     eciToGeodetic,
     degreesLat,
-    degreesLong
+    degreesLong,
+    jday,
+    sunPos
 } from 'https://esm.sh/satellite.js@6.0.2';
 
 import { ommWorldview3 } from './satellites-worldview3.js';
@@ -37,15 +39,19 @@ labelRenderer.domElement.style.top = '0px';
 labelRenderer.domElement.style.pointerEvents = 'none'; // Pour que la souris passe à travers et contrôle la 3D
 document.body.appendChild(labelRenderer.domElement);
 
-
-// --- LUMIERES ---
+// =====================
+// --- AMBIENT LIGHT ---
+// =====================
 const ambientLight = new THREE.AmbientLight(0x808080, 0.3);
 scene.add(ambientLight);
 
-const sunLight = new THREE.DirectionalLight(0xffffff, 5.0);
-sunLight.position.set(-10000, 0, 0);
+// =====================
+// ---   SUN LIGHT   ---
+// =====================
+const sunLight = new THREE.DirectionalLight(0xffffff, 20.0);
+// sunLight.position.set(-10000, 0, 0);
+sunLight.target.position.set(0, 0, 0);
 scene.add(sunLight);
-
 
 // ==========================================
 // --- LA TERRE ---
@@ -75,8 +81,8 @@ const earthMaterial = new THREE.MeshPhongMaterial({
     map: earthTexture,
     wireframe: false,
     transparent: true,
-    opacity: 0.8,
-    shininess: 25,
+    opacity: 0.9,
+    shininess: 5,
     // specular: new THREE.Color(0x404040),
     // emissive: new THREE.Color(0x001020)
 });
@@ -87,11 +93,9 @@ scene.add(earth);
 // ==========================================
 // --- REPÈRE ECI (Axes X, Y, Z) ---
 // ==========================================
-// On crée un repère de 12 000 km de long pour qu'il dépasse largement de la Terre
-const axesHelper = new THREE.AxesHelper(12000);
+const axesHelper = new THREE.AxesHelper(50000);
 scene.add(axesHelper);
 
-// Étiquette pour l'axe Nord (Y)
 const labelN = createLabel('ECI NORD (Y)', '#00ff00');
 labelN.position.set(0, 12500, 0); // Placé juste au bout de l'axe vert
 scene.add(labelN);
@@ -190,42 +194,79 @@ controls.update();
 
 
 
-// --- 5. FONCTION DE CONVERSION COORDONNÉES ---
-function getSatellitePosition(lat, lon, alt) {
-    const r = earthRadius + alt;
-    const phi = (90 - lat) * (Math.PI / 180);
-    const theta = (lon + 180) * (Math.PI / 180);
-
-    return new THREE.Vector3(
-        -(r * Math.sin(phi) * Math.sin(theta)),
-        r * Math.cos(phi),
-        r * Math.sin(phi) * Math.cos(theta)
-    );
-}
 
 
 const satRecWorldview3 = json2satrec(ommWorldview3);
-console.log(satRecWorldview3);
 
 const divInfo1 = document.getElementById("info1");
 const divInfo2 = document.getElementById("info2");
 const divInfo3 = document.getElementById("info3");
 
-const clock = new THREE.Clock();
+
+/*
+const poitiersGd = {
+    latitude: degreesToRadians(46.55677300119089),
+    longitude: degreesToRadians(0.31380768108744067),
+    height: 0.128
+};
+*/
+
+const AU = 149600000;
 
 function animate() {
     requestAnimationFrame(animate);
 
     const now = new Date();
+
+    // Compute Sun position
+    const jdayNow = jday(now.getUTCFullYear(),
+        now.getUTCMonth() + 1,
+        now.getUTCDate(),
+        now.getUTCHours(),
+        now.getUTCMinutes(),
+        now.getUTCSeconds()
+    );
+
+    const sunPosInfo = sunPos(jdayNow);
+    const sunPosNow = sunPosInfo.rsun;
+    const sunDirection = new THREE.Vector3(sunPosNow[0], sunPosNow[2], -sunPosNow[1]);
+    sunDirection.multiplyScalar(AU);
+    sunLight.position.copy(sunDirection);
+    sunLight.target.position.set(0, 0, 0);
+    sunLight.target.updateMatrixWorld();
+
+    // Compute Greewich Mean Sideral Time
+    const gmst = gstime(now);
+
+    // Update Earth rotation accordingly
+    earth.rotation.y = gmst;
+
+    // Compute Satellite Earth Centered Inertial coordinates
+    const positionAndVelocityECI = propagate(satRecWorldview3, now);
+    const positionECI = positionAndVelocityECI.position;
+
+    // Compute Satellite Geodetic coordinates
+    const positionGeodeticSatellite = eciToGeodetic(positionECI, gmst);
+    const satelliteGd = {
+        latitude: degreesLat(positionGeodeticSatellite.latitude),
+        longitude: degreesLong(positionGeodeticSatellite.longitude),
+        height: positionGeodeticSatellite.height
+    }
+
+    // Convert Geodetic Lat Long Height into THREE.Vector3 and use it as satellite graphic object coords
+    const newPos = latLonToVector3(
+        satelliteGd.latitude,
+        satelliteGd.longitude,
+        satelliteGd.height + earthRadius);
+    satelliteGrobThreeJS.position.copy(newPos);
+
+
     divInfo1.innerHTML = `
     <div>DATE: <strong>${now.toLocaleString()}</strong></div>
     <div>NAME: <strong>${ommWorldview3.OBJECT_NAME}</strong></div>
     <div>ID: <strong>${ommWorldview3.OBJECT_ID}</strong></div>
     <div>NORAD: <strong>${ommWorldview3.NORAD_CAT_ID}</strong></div>
     `;
-
-    const positionAndVelocityECI = propagate(satRecWorldview3, now);
-    const positionECI = positionAndVelocityECI.position;
 
     divInfo2.innerHTML = `
     <div>ECI (Earth Centered Inertial):</div>
@@ -234,21 +275,6 @@ function animate() {
     <div>Z: <strong>${positionECI.z.toFixed(2)}</strong> km</div>
     `;
 
-    const poitiersGd = {
-        latitude: degreesToRadians(46.55677300119089),
-        longitude: degreesToRadians(0.31380768108744067),
-        height: 0.128
-    };
-
-    const gmst = gstime(now);
-    const positionGeodeticSatellite = eciToGeodetic(positionECI, gmst);
-
-    const satelliteGd = {
-        latitude: degreesLat(positionGeodeticSatellite.latitude),
-        longitude: degreesLong(positionGeodeticSatellite.longitude),
-        height: positionGeodeticSatellite.height
-    }
-
     divInfo3.innerHTML = `
     <div>Earth cordinates</div>
     <div>lat: <strong>${satelliteGd.latitude.toFixed(2)}</strong>°</div>
@@ -256,25 +282,6 @@ function animate() {
     <div>alt: <strong>${satelliteGd.height.toFixed(2)}</strong> km</div>
     `;
 
-
-
-    // Mise à jour de la position du satellite
-    const newPos = latLonToVector3(
-        satelliteGd.latitude,
-        satelliteGd.longitude,
-        satelliteGd.height + earthRadius);
-    satelliteGrobThreeJS.position.copy(newPos);
-
-    // === Rotation terrestre ===
-    // 1. Récupérer le temps écoulé en secondes depuis la dernière image (ex: ~0.016s en 60fps)
-    const deltaTime = clock.getDelta();
-
-    // 2. Vitesse angulaire de la Terre (en radians par seconde)
-    // 2 * Math.PI / 86164.1 secondes du jour sidéral
-    const earthAngularVelocity = (2 * Math.PI) / 86164.1;
-
-    // 3. Appliquer la rotation exacte proportionnelle au temps écoulé
-    earth.rotation.y += earthAngularVelocity * deltaTime;
 
     controls.update();
     wegGLRenderer.render(scene, camera);
@@ -294,11 +301,10 @@ window.addEventListener('resize', () => {
 
 
 
-
-
 // R : Rayon de votre Terre 3D + Altitude du satellite
 // lat : Latitude en degrés (-90 à 90)
 // lon : Longitude en degrés (-180 à 180)
+// Inversion d'axe : satellite.js (Z = Nord) -> Three.js (Y = Nord)
 function latLonToVector3(lat, lon, radius) {
     const phi = (90 - lat) * (Math.PI / 180);
     const theta = (lon + 180) * (Math.PI / 180);
@@ -309,7 +315,6 @@ function latLonToVector3(lat, lon, radius) {
 
     return new THREE.Vector3(x, y, z);
 }
-
 
 
 // Création étiquette tectuelle
