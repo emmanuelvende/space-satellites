@@ -13,7 +13,7 @@ import {
     sunPos
 } from 'https://esm.sh/satellite.js@6.0.2';
 
-import { ommWorldview3 } from './satellites-worldview3.js';
+import { ommWorldview3 } from './sats-info.js';
 
 // --- SCENE ---
 const scene = new THREE.Scene();
