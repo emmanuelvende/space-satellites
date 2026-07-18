@@ -48,7 +48,7 @@ scene.add(ambientLight);
 // =====================
 // ---   SUN LIGHT   ---
 // =====================
-const sunLight = new THREE.DirectionalLight(0xffffff, 20.0);
+const sunLight = new THREE.DirectionalLight(0xffffff, 5.0);
 // sunLight.position.set(-10000, 0, 0);
 sunLight.target.position.set(0, 0, 0);
 scene.add(sunLight);
@@ -58,31 +58,22 @@ scene.add(sunLight);
 // ==========================================
 const earthRadius = 6371;
 const earthGeometry = new THREE.SphereGeometry(earthRadius, 64, 32); // 64 segments horizontaux et 32 verticaux pour une belle rondeur lisse
-
-// const earthMaterial = new THREE.MeshBasicMaterial({
-//     color: 0x0060ff,
-//     wireframe: false,
-//     transparent: true,
-//     opacity: 0.2
-// });
-
-// const earth = new THREE.Mesh(earthGeometry, earthMaterial);
-// scene.add(earth);
 // ==========================================
 // --- TEXTURE ET MATÉRIAU DE LA TERRE ---
 // ==========================================
-
 // 1. On charge la texture (Image de la Terre en haute définition)
 const textureLoader = new THREE.TextureLoader();
-const earthTexture = textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_atmos_2048.jpg');
-
+// const earthTexture = textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_atmos_2048.jpg');
+// const earthTexture = textureLoader.load('./8k_earth_daymap.jpg');
 // 2. On utilise MeshPhongMaterial pour qu'elle réagisse magnifiquement à ton SunLight
 const earthMaterial = new THREE.MeshPhongMaterial({
-    map: earthTexture,
+    map: textureLoader.load('./8k_earth_daymap.jpg'),
+    specularMap: textureLoader.load('./8k_earth_specular_map.tif'),
+    specular: new THREE.Color('grey'),
     wireframe: false,
     transparent: true,
     opacity: 0.9,
-    shininess: 5,
+    shininess: 15,
     // specular: new THREE.Color(0x404040),
     // emissive: new THREE.Color(0x001020)
 });
