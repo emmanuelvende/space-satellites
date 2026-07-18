@@ -261,16 +261,16 @@ function animate() {
 
     divInfo2.innerHTML = `
     <div>ECI (Earth Centered Inertial):</div>
-    <div>X: <strong>${positionECI.x.toFixed(2)}</strong> km</div>
-    <div>Y: <strong>${positionECI.y.toFixed(2)}</strong> km</div>
-    <div>Z: <strong>${positionECI.z.toFixed(2)}</strong> km</div>
+    <div>X: <strong>${positionECI.x.toFixed(3)}</strong> km</div>
+    <div>Y: <strong>${positionECI.y.toFixed(3)}</strong> km</div>
+    <div>Z: <strong>${positionECI.z.toFixed(3)}</strong> km</div>
     `;
 
     divInfo3.innerHTML = `
     <div>Earth cordinates</div>
-    <div>lat: <strong>${satelliteGd.latitude.toFixed(2)}</strong>°</div>
-    <div>long: <strong>${satelliteGd.longitude.toFixed(2)}</strong>°</div>
-    <div>alt: <strong>${satelliteGd.height.toFixed(2)}</strong> km</div>
+    <div>lat: <strong>${satelliteGd.latitude.toFixed(3)}</strong>°</div>
+    <div>long: <strong>${satelliteGd.longitude.toFixed(3)}</strong>°</div>
+    <div>alt: <strong>${satelliteGd.height.toFixed(3)}</strong> km</div>
     `;
 
 
