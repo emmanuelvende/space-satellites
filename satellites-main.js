@@ -39,10 +39,10 @@ document.body.appendChild(labelRenderer.domElement);
 
 
 // --- LUMIERES ---
-const ambientLight = new THREE.AmbientLight(0x333333);
+const ambientLight = new THREE.AmbientLight(0x808080, 0.3);
 scene.add(ambientLight);
 
-const sunLight = new THREE.DirectionalLight(0xffffff, 1.5);
+const sunLight = new THREE.DirectionalLight(0xffffff, 5.0);
 sunLight.position.set(-10000, 0, 0);
 scene.add(sunLight);
 
@@ -76,7 +76,9 @@ const earthMaterial = new THREE.MeshPhongMaterial({
     wireframe: false,
     transparent: true,
     opacity: 0.8,
-    shininess: 15
+    shininess: 25,
+    // specular: new THREE.Color(0x404040),
+    // emissive: new THREE.Color(0x001020)
 });
 
 const earth = new THREE.Mesh(earthGeometry, earthMaterial);
@@ -181,7 +183,7 @@ scene.add(satelliteGrobThreeJS);
 
 camera.position.set(15000, 10000, 15000);
 camera.near = 10;
-camera.far = 50000;
+camera.far = 400000;
 camera.updateProjectionMatrix(); // appliquer chgt de clipping
 controls.target.set(0, 0, 0);
 controls.update();
