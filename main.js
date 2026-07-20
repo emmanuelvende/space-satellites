@@ -27,9 +27,8 @@ world.scene.add(sunLight);
 const earth = new Earth();
 world.scene.add(earth.mesh);
 
-document.getElementById("toggleEquator").addEventListener("click", () => {
-    earth.toggleEquator();
-})
+document.getElementById("toggleEquator").addEventListener("click", () => earth.toggleEquator());
+document.getElementById("toggleGrid").addEventListener("click", () => earth.toggleGrid());
 
 // ==========================================
 // --- REPÈRE ECI (Axes X, Y, Z) ---
@@ -59,8 +58,6 @@ const axesHelperECF = new THREE.AxesHelper(9000);
 // TRÈS IMPORTANT : On l'ajoute à "earth", pas à "scene" !
 earth.mesh.add(axesHelperECF);
 
-
-setupEarthGrid(earth.mesh, earth.radius);
 
 // --- LE SATELLITE ---
 const satSize = 500;
