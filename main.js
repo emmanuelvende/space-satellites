@@ -16,44 +16,13 @@ import {
 import { ommWorldview3 } from './sats-info.js';
 import { setupEarthGrid } from './earth-grid.js';
 import { createLabel } from './utils.js';
+import { createSunLight } from './sunlight.js';
+import { World } from './world.js';
 
-// --- SCENE ---
-const scene = new THREE.Scene();
+const world = new World();
+const sunLight = createSunLight();
+world.scene.add(sunLight);
 
-// --- CAMERA ---
-const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-
-// --- RENDERER WEBGL ---
-const wegGLRenderer = new THREE.WebGLRenderer({ antialias: true });
-wegGLRenderer.setSize(window.innerWidth, window.innerHeight);
-wegGLRenderer.setPixelRatio(window.devicePixelRatio);
-document.body.appendChild(wegGLRenderer.domElement);
-
-// --- ORBIT CONTROLS ---
-const controls = new OrbitControls(camera, wegGLRenderer.domElement);
-controls.enableDamping = true;
-
-// --- RENDERER TEXTE HTML SUPERPOSE ---
-const labelRenderer = new CSS2DRenderer();
-labelRenderer.setSize(window.innerWidth, window.innerHeight);
-labelRenderer.domElement.style.position = 'absolute';
-labelRenderer.domElement.style.top = '0px';
-labelRenderer.domElement.style.pointerEvents = 'none'; // Pour que la souris passe à travers et contrôle la 3D
-document.body.appendChild(labelRenderer.domElement);
-
-// =====================
-// --- AMBIENT LIGHT ---
-// =====================
-const ambientLight = new THREE.AmbientLight(0x808080, 0.3);
-scene.add(ambientLight);
-
-// =====================
-// ---   SUN LIGHT   ---
-// =====================
-const sunLight = new THREE.DirectionalLight(0xffffff, 5.0);
-// sunLight.position.set(-10000, 0, 0);
-sunLight.target.position.set(0, 0, 0);
-scene.add(sunLight);
 
 // ==========================================
 // --- LA TERRE ---
@@ -81,22 +50,22 @@ const earthMaterial = new THREE.MeshPhongMaterial({
 });
 
 const earthGrob = new THREE.Mesh(earthGeometry, earthMaterial);
-scene.add(earthGrob);
+world.scene.add(earthGrob);
 
 // ==========================================
 // --- REPÈRE ECI (Axes X, Y, Z) ---
 // ==========================================
 const axesHelper = new THREE.AxesHelper(50000);
-scene.add(axesHelper);
+world.scene.add(axesHelper);
 
 const labelN = createLabel('ECI NORD (Y)', '#00ff00');
 labelN.position.set(0, 12500, 0); // Placé juste au bout de l'axe vert
-scene.add(labelN);
+world.scene.add(labelN);
 
 // Étiquette pour l'axe Vernal (X)
 const labelX = createLabel('ECI X (0°)', '#ff0000');
 labelX.position.set(12500, 0, 0);
-scene.add(labelX);
+world.scene.add(labelX);
 
 // ==========================================
 // --- L'ÉQUATEUR ---
@@ -118,7 +87,7 @@ const equator = new THREE.Mesh(equatorGeometry, equatorMaterial);
 // On le couche à plat (rotation de 90° = Math.PI / 2 sur l'axe X) pour qu'il coupe la Terre au centre.
 equator.rotation.x = Math.PI / 2;
 
-scene.add(equator);
+world.scene.add(equator);
 
 
 
@@ -136,19 +105,19 @@ earthGrob.add(axesHelperECF);
 setupEarthGrid(earthGrob, earthRadius);
 
 // --- LE SATELLITE ---
-const satSize = 500; // 500 km de côté :)
+const satSize = 500;
 const satGeometry = new THREE.BoxGeometry(satSize, satSize, satSize);
 const satMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
 const satelliteGrobThreeJS = new THREE.Mesh(satGeometry, satMaterial);
 
-scene.add(satelliteGrobThreeJS);
+world.scene.add(satelliteGrobThreeJS);
 
-camera.position.set(15000, 10000, 15000);
-camera.near = 10;
-camera.far = 400000;
-camera.updateProjectionMatrix(); // appliquer chgt de clipping
-controls.target.set(0, 0, 0);
-controls.update();
+world.camera.position.set(15000, 10000, 15000);
+world.camera.near = 10;
+world.camera.far = 400000;
+world.camera.updateProjectionMatrix(); // appliquer chgt de clipping
+world.controls.target.set(0, 0, 0);
+world.controls.update();
 
 
 
@@ -241,19 +210,19 @@ function animate() {
     `;
 
 
-    controls.update();
-    wegGLRenderer.render(scene, camera);
-    labelRenderer.render(scene, camera);
+    world.controls.update();
+    world.wegGLRenderer.render(world.scene, world.camera);
+    world.labelRenderer.render(world.scene, world.camera);
 }
 
 animate();
 
 // --- 7. REDIMENSIONNEMENT FENÊTRE ---
 window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    wegGLRenderer.setSize(window.innerWidth, window.innerHeight);
-    labelRenderer.setSize(window.innerWidth, window.innerHeight);
+    world.camera.aspect = window.innerWidth / window.innerHeight;
+    world.camera.updateProjectionMatrix();
+    world.wegGLRenderer.setSize(window.innerWidth, window.innerHeight);
+    world.labelRenderer.setSize(window.innerWidth, window.innerHeight);
 });
 
 
