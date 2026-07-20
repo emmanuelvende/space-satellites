@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { createLabel } from './utils.js';
+import { createLabel } from './label2d.js';
 
 /**
  * meridians & parallels

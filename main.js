@@ -14,8 +14,7 @@ import {
 } from 'https://esm.sh/satellite.js@6.0.2';
 
 import { ommWorldview3 } from './sats-info.js';
-import { setupEarthGrid } from './earth-grid.js';
-import { createLabel } from './utils.js';
+import { createLabel } from './label2d.js';
 import { createSunLight } from './sunlight.js';
 import { World } from './world.js';
 import { Earth } from './earth.js';
@@ -27,8 +26,14 @@ world.scene.add(sunLight);
 const earth = new Earth();
 world.scene.add(earth.mesh);
 
-document.getElementById("toggleEquator").addEventListener("click", () => earth.toggleEquator());
-document.getElementById("toggleGrid").addEventListener("click", () => earth.toggleGrid());
+document.getElementById("toggleEquator")
+    .addEventListener("click", () => earth.toggleEquator());
+
+document.getElementById("toggleGrid")
+    .addEventListener("click", () => earth.toggleGrid());
+
+document.getElementById("toggleGraticule")
+    .addEventListener("click", () => earth.toggleMeridiansParallels());
 
 // ==========================================
 // --- REPÈRE ECI (Axes X, Y, Z) ---

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { createLabel } from './label2d.js';
 
 export class Earth {
     constructor() {
@@ -21,7 +22,7 @@ export class Earth {
 
         this.createEquator();
         this.createGrid();
-
+        this.createMeridiansParallels();
     }
 
     createEquator() {
@@ -44,37 +45,65 @@ export class Earth {
         const gridGeometry = new THREE.SphereGeometry(this.radius + 50, 36, 36);
         const edges = new THREE.EdgesGeometry(gridGeometry);
         const gridMaterial = new THREE.LineBasicMaterial({
-            color: 0x00ffaa,
+            color: 0x00ffc0,
             transparent: true,
             opacity: 0.4
         });
 
         this.gridMesh = new THREE.LineSegments(edges, gridMaterial);
-
         this.mesh.add(this.gridMesh);
-
-        /*
-        // Méridien de Greenwich (0° Longitude, posé sur l'Équateur)
-        const labelGreenwich = createLabel('0° (Greenwich)', '#00ffaa');
-        labelGreenwich.position.set(earthRadius + 250, 0, 0); // Axe X de la Terre
-        earthGrob.add(labelGreenwich);
-
-        // Longitude 90° Est
-        const label90E = createLabel('90° E', '#00ffaa');
-        label90E.position.set(0, 0, -(earthRadius + 250));
-        earthGrob.add(label90E);
-
-        // Parallèle 45° Nord (par exemple)
-        const label45N = createLabel('45° N', '#ffff00');
-        // On calcule la position en hauteur pour 45°
-        const h45 = earthRadius * Math.sin(Math.PI / 4);
-        const r45 = earthRadius * Math.cos(Math.PI / 4);
-        label45N.position.set(r45 + 250, h45, 0);
-        earthGrob.add(label45N);
-        */
     }
-
     toggleGrid() {
         this.gridMesh.visible = !this.gridMesh.visible;
     }
+
+    createMeridiansParallels() {
+        const greenwichGeometry = new THREE.TorusGeometry(this.radius + 20, 30, 16, 100);
+        const meridiansParallelsMaterial = new THREE.MeshBasicMaterial({
+            color: 0x00ffc0,
+            transparent: true,
+            opacity: 0.8
+        });
+        this.greenwichMesh = new THREE.Mesh(greenwichGeometry, meridiansParallelsMaterial);
+        this.mesh.add(this.greenwichMesh);
+        this.labelGreenwich = createLabel('0° (Greenwich)', '#00ffc0');
+        this.labelGreenwich.position.set(this.radius + 250, 0, 0);
+        this.mesh.add(this.labelGreenwich);
+
+        // Longitude 90° E
+        const meridian90EGeometry = new THREE.TorusGeometry(this.radius + 20, 30, 16, 100);
+        this.meridian90EMesh = new THREE.Mesh(meridian90EGeometry, meridiansParallelsMaterial);
+        this.meridian90EMesh.rotation.x = Math.PI / 2;
+        this.meridian90EMesh.rotation.y = Math.PI / 2;
+        this.mesh.add(this.meridian90EMesh);
+        this.label90E = createLabel('90° E', '#00ffaa');
+        this.label90E.position.set(0, 0, -(this.radius + 250));
+        this.mesh.add(this.label90E);
+
+        // Latitude 45° N
+        const parallel45NGeometry = new THREE.TorusGeometry(this.radius * Math.sin(Math.PI / 4) + 20, 30, 16, 100);
+        this.parallel45NMesh = new THREE.Mesh(parallel45NGeometry, meridiansParallelsMaterial);
+        this.parallel45NMesh.rotation.x = Math.PI / 2;
+        this.parallel45NMesh.position.y = this.radius * Math.sin(Math.PI / 4);
+        this.mesh.add(this.parallel45NMesh);
+
+        this.label45N = createLabel('45° N', '#00ffaa');
+        const h45 = this.radius * Math.sin(Math.PI / 4);
+        const r45 = this.radius * Math.cos(Math.PI / 4);
+        this.label45N.position.set(r45 + 250, h45, 0);
+        this.mesh.add(this.label45N);
+
+    }
+
+    toggleMeridiansParallels() {
+        this.labelGreenwich.visible = !this.labelGreenwich.visible;
+        this.greenwichMesh.visible = !this.greenwichMesh.visible;
+
+        this.label90E.visible = !this.label90E.visible;
+        this.meridian90EMesh.visible = !this.meridian90EMesh.visible;
+
+        this.label45N.visible = !this.label45N.visible;
+        this.parallel45NMesh.visible = !this.parallel45NMesh.visible;
+    }
+
 }
