@@ -18,39 +18,14 @@ import { setupEarthGrid } from './earth-grid.js';
 import { createLabel } from './utils.js';
 import { createSunLight } from './sunlight.js';
 import { World } from './world.js';
+import { Earth } from './earth.js';
 
 const world = new World();
 const sunLight = createSunLight();
 world.scene.add(sunLight);
 
-
-// ==========================================
-// --- LA TERRE ---
-// ==========================================
-const earthRadius = 6371;
-const earthGeometry = new THREE.SphereGeometry(earthRadius, 64, 32); // 64 segments horizontaux et 32 verticaux pour une belle rondeur lisse
-// ==========================================
-// --- TEXTURE ET MATÉRIAU DE LA TERRE ---
-// ==========================================
-// 1. On charge la texture (Image de la Terre en haute définition)
-const textureLoader = new THREE.TextureLoader();
-// const earthTexture = textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_atmos_2048.jpg');
-// const earthTexture = textureLoader.load('./8k_earth_daymap.jpg');
-// 2. On utilise MeshPhongMaterial pour qu'elle réagisse magnifiquement à ton SunLight
-const earthMaterial = new THREE.MeshPhongMaterial({
-    map: textureLoader.load('./8k_earth_daymap.jpg'),
-    specularMap: textureLoader.load('./8k_earth_specular_map.tif'),
-    specular: new THREE.Color('grey'),
-    wireframe: false,
-    transparent: true,
-    opacity: 0.9,
-    shininess: 15,
-    // specular: new THREE.Color(0x404040),
-    // emissive: new THREE.Color(0x001020)
-});
-
-const earthGrob = new THREE.Mesh(earthGeometry, earthMaterial);
-world.scene.add(earthGrob);
+const earth = new Earth();
+world.scene.add(earth.mesh);
 
 // ==========================================
 // --- REPÈRE ECI (Axes X, Y, Z) ---
@@ -73,7 +48,7 @@ world.scene.add(labelX);
 // On crée un anneau fin (Torus) légèrement plus large que la Terre
 // Rayon interne : 6371 + 20km (pour pas qu'il rentre dans le maillage)
 // Épaisseur du tube : 30km (pour être visible de loin)
-const equatorGeometry = new THREE.TorusGeometry(earthRadius + 20, 30, 16, 100);
+const equatorGeometry = new THREE.TorusGeometry(earth.radius + 20, 30, 16, 100);
 
 const equatorMaterial = new THREE.MeshBasicMaterial({
     color: 0xffff00, // Jaune vif pour bien le distinguer
@@ -99,10 +74,10 @@ world.scene.add(equator);
 const axesHelperECF = new THREE.AxesHelper(9000);
 
 // TRÈS IMPORTANT : On l'ajoute à "earth", pas à "scene" !
-earthGrob.add(axesHelperECF);
+earth.mesh.add(axesHelperECF);
 
 
-setupEarthGrid(earthGrob, earthRadius);
+setupEarthGrid(earth.mesh, earth.radius);
 
 // --- LE SATELLITE ---
 const satSize = 500;
@@ -118,8 +93,6 @@ world.camera.far = 400000;
 world.camera.updateProjectionMatrix(); // appliquer chgt de clipping
 world.controls.target.set(0, 0, 0);
 world.controls.update();
-
-
 
 
 
@@ -166,7 +139,7 @@ function animate() {
     const gmst = gstime(now);
 
     // Update Earth rotation accordingly
-    earthGrob.rotation.y = gmst;
+    earth.mesh.rotation.y = gmst;
 
     // Compute Satellite Earth Centered Inertial coordinates
     const positionAndVelocityECI = propagate(satRecWorldview3, now);
@@ -184,7 +157,7 @@ function animate() {
     const newPos = latLonToVector3(
         satelliteGd.latitude,
         satelliteGd.longitude,
-        satelliteGd.height + earthRadius);
+        satelliteGd.height + earth.radius);
     satelliteGrobThreeJS.position.copy(newPos);
 
 
