@@ -27,6 +27,10 @@ world.scene.add(sunLight);
 const earth = new Earth();
 world.scene.add(earth.mesh);
 
+document.getElementById("toggleEquator").addEventListener("click", () => {
+    earth.toggleEquator();
+})
+
 // ==========================================
 // --- REPÈRE ECI (Axes X, Y, Z) ---
 // ==========================================
@@ -42,27 +46,6 @@ const labelX = createLabel('ECI X (0°)', '#ff0000');
 labelX.position.set(12500, 0, 0);
 world.scene.add(labelX);
 
-// ==========================================
-// --- L'ÉQUATEUR ---
-// ==========================================
-// On crée un anneau fin (Torus) légèrement plus large que la Terre
-// Rayon interne : 6371 + 20km (pour pas qu'il rentre dans le maillage)
-// Épaisseur du tube : 30km (pour être visible de loin)
-const equatorGeometry = new THREE.TorusGeometry(earth.radius + 20, 30, 16, 100);
-
-const equatorMaterial = new THREE.MeshBasicMaterial({
-    color: 0xffff00, // Jaune vif pour bien le distinguer
-    transparent: true,
-    opacity: 0.8
-});
-
-const equator = new THREE.Mesh(equatorGeometry, equatorMaterial);
-
-// Par défaut, l'anneau est dressé verticalement (sur le plan X-Y).
-// On le couche à plat (rotation de 90° = Math.PI / 2 sur l'axe X) pour qu'il coupe la Terre au centre.
-equator.rotation.x = Math.PI / 2;
-
-world.scene.add(equator);
 
 
 
@@ -176,7 +159,7 @@ function animate() {
     `;
 
     divInfo3.innerHTML = `
-    <div>Earth cordinates</div>
+    <div>Satellite</div>
     <div>lat: <strong>${satelliteGd.latitude.toFixed(3)}</strong>°</div>
     <div>long: <strong>${satelliteGd.longitude.toFixed(3)}</strong>°</div>
     <div>alt: <strong>${satelliteGd.height.toFixed(3)}</strong> km</div>

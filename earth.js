@@ -16,7 +16,26 @@ export class Earth {
             // specular: new THREE.Color(0x404040),
             // emissive: new THREE.Color(0x001020)
         });
-        
-    this.mesh = new THREE.Mesh(earthGeometry, earthMaterial);
+
+        this.mesh = new THREE.Mesh(earthGeometry, earthMaterial);
+
+        this.createEquator();
+
+    }
+
+    createEquator() {
+        const equatorGeometry = new THREE.TorusGeometry(this.radius + 20, 30, 16, 100);
+        const equatorMaterial = new THREE.MeshBasicMaterial({
+            color: 0xffff00,
+            transparent: true,
+            opacity: 0.8
+        });
+        this.equator = new THREE.Mesh(equatorGeometry, equatorMaterial);
+        this.equator.rotation.x = Math.PI / 2;
+        this.mesh.add(this.equator);
+    }
+
+    toggleEquator() {
+        this.equator.visible = !this.equator.visible;
     }
 }
