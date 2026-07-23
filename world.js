@@ -12,7 +12,7 @@ export class World {
 
         this.setupCamera();
         this.setupOrbitControls();
-        
+
         this.setupAmbientLight();
         this.setupECIAxes();
 
@@ -26,8 +26,10 @@ export class World {
         this.camera = new THREE.PerspectiveCamera(
             60,
             window.innerWidth / window.innerHeight,
-            0.1,
-            1000);
+            10,
+            400000);
+        this.camera.position.set(15000, 10000, 15000);
+        this.camera.updateProjectionMatrix();
     }
 
     setUpWebGLRenderer() {
@@ -38,8 +40,11 @@ export class World {
     }
 
     setupOrbitControls() {
-        this.controls = new OrbitControls(this.camera, this.wegGLRenderer.domElement);
-        this.controls.enableDamping = true;
+        this.orbitControls = new OrbitControls(this.camera, this.wegGLRenderer.domElement);
+        this.orbitControls.enableDamping = true;
+
+        this.orbitControls.target.set(0, 0, 0);
+        this.orbitControls.update();
     }
 
     setupLabelRenderer() {

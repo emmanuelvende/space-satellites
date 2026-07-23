@@ -8,20 +8,19 @@ import {
     degreesToRadians,
     eciToGeodetic,
     degreesLat,
-    degreesLong,
-    jday,
-    sunPos
+    degreesLong
 } from 'https://esm.sh/satellite.js@6.0.2';
 
 import { ommWorldview3 } from './sats-info.js';
 import { createLabel } from './label2d.js';
-import { createSunLight } from './sunlight.js';
+import { SunLight } from './sunlight.js';
 import { World } from './world.js';
 import { Earth } from './earth.js';
 
 const world = new World();
-const sunLight = createSunLight();
-world.scene.add(sunLight);
+
+const sunLight = new SunLight()
+world.scene.add(sunLight.directionalLight);
 
 const earth = new Earth();
 world.scene.add(earth.mesh);
@@ -43,22 +42,13 @@ document.getElementById("toggleECF")
 
 
 
-
-
-// --- LE SATELLITE ---
+// --- SATELLITE ---
 const satSize = 500;
 const satGeometry = new THREE.BoxGeometry(satSize, satSize, satSize);
 const satMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
 const satelliteGrobThreeJS = new THREE.Mesh(satGeometry, satMaterial);
 
 world.scene.add(satelliteGrobThreeJS);
-
-world.camera.position.set(15000, 10000, 15000);
-world.camera.near = 10;
-world.camera.far = 400000;
-world.camera.updateProjectionMatrix(); // appliquer chgt de clipping
-world.controls.target.set(0, 0, 0);
-world.controls.update();
 
 
 
@@ -77,29 +67,13 @@ const poitiersGd = {
 };
 */
 
-const AU = 149600000;
 
 function animate() {
     requestAnimationFrame(animate);
 
     const now = new Date();
 
-    // Compute Sun position
-    const jdayNow = jday(now.getUTCFullYear(),
-        now.getUTCMonth() + 1,
-        now.getUTCDate(),
-        now.getUTCHours(),
-        now.getUTCMinutes(),
-        now.getUTCSeconds()
-    );
-
-    const sunPosInfo = sunPos(jdayNow);
-    const sunPosNow = sunPosInfo.rsun;
-    const sunDirection = new THREE.Vector3(sunPosNow[0], sunPosNow[2], -sunPosNow[1]);
-    sunDirection.multiplyScalar(AU);
-    sunLight.position.copy(sunDirection);
-    sunLight.target.position.set(0, 0, 0);
-    sunLight.target.updateMatrixWorld();
+    sunLight.updateSpatialPosition(now);
 
     // Compute Greewich Mean Sideral Time
     const gmst = gstime(now);
@@ -149,7 +123,7 @@ function animate() {
     `;
 
 
-    world.controls.update();
+    world.orbitControls.update();
     world.wegGLRenderer.render(world.scene, world.camera);
     world.labelRenderer.render(world.scene, world.camera);
 }
