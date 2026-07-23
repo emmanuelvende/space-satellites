@@ -16,8 +16,12 @@ import { createLabel } from './label2d.js';
 import { SunLight } from './sunlight.js';
 import { World } from './world.js';
 import { Earth } from './earth.js';
+import { Satellite } from './satellite.js';
 
 const world = new World();
+
+document.getElementById("toggleECI")
+    .addEventListener("click", () => world.toggleECIAxes());
 
 const sunLight = new SunLight()
 world.scene.add(sunLight.directionalLight);
@@ -34,21 +38,13 @@ document.getElementById("toggleGrid")
 document.getElementById("toggleGraticule")
     .addEventListener("click", () => earth.toggleMeridiansParallels());
 
-document.getElementById("toggleECI")
-    .addEventListener("click", () => world.toggleECIAxes());
 
 document.getElementById("toggleECF")
     .addEventListener("click", () => earth.toggleECFAxes());
 
 
-
-// --- SATELLITE ---
-const satSize = 500;
-const satGeometry = new THREE.BoxGeometry(satSize, satSize, satSize);
-const satMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
-const satelliteGrobThreeJS = new THREE.Mesh(satGeometry, satMaterial);
-
-world.scene.add(satelliteGrobThreeJS);
+const satellite = new Satellite();
+world.scene.add(satellite.mesh);
 
 
 
@@ -98,7 +94,7 @@ function animate() {
         satelliteGd.latitude,
         satelliteGd.longitude,
         satelliteGd.height + earth.radius);
-    satelliteGrobThreeJS.position.copy(newPos);
+    satellite.mesh.position.copy(newPos);
 
 
     divInfo1.innerHTML = `
