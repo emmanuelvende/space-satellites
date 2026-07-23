@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer } from 'three/addons/renderers/CSS2DRenderer.js';
 import {
-    json2satrec,
     propagate,
     gstime,
     degreesToRadians,
@@ -43,12 +42,9 @@ document.getElementById("toggleECF")
     .addEventListener("click", () => earth.toggleECFAxes());
 
 
-const satellite = new Satellite();
+const satellite = new Satellite(ommWorldview3);
 world.scene.add(satellite.mesh);
 
-
-
-const satRecWorldview3 = json2satrec(ommWorldview3);
 
 const divInfo1 = document.getElementById("info1");
 const divInfo2 = document.getElementById("info2");
@@ -77,24 +73,7 @@ function animate() {
     // Update Earth rotation accordingly
     earth.mesh.rotation.y = gmst;
 
-    // Compute Satellite Earth Centered Inertial coordinates
-    const positionAndVelocityECI = propagate(satRecWorldview3, now);
-    const positionECI = positionAndVelocityECI.position;
-
-    // Compute Satellite Geodetic coordinates
-    const positionGeodeticSatellite = eciToGeodetic(positionECI, gmst);
-    const satelliteGd = {
-        latitude: degreesLat(positionGeodeticSatellite.latitude),
-        longitude: degreesLong(positionGeodeticSatellite.longitude),
-        height: positionGeodeticSatellite.height
-    }
-
-    // Convert Geodetic Lat Long Height into THREE.Vector3 and use it as satellite graphic object coords
-    const newPos = latLonToVector3(
-        satelliteGd.latitude,
-        satelliteGd.longitude,
-        satelliteGd.height + earth.radius);
-    satellite.mesh.position.copy(newPos);
+    satellite.updateSpatialPosition(now, earth.radius);
 
 
     divInfo1.innerHTML = `
@@ -104,18 +83,20 @@ function animate() {
     <div>NORAD: <strong>${ommWorldview3.NORAD_CAT_ID}</strong></div>
     `;
 
+    /*
     divInfo2.innerHTML = `
     <div>ECI (Earth Centered Inertial):</div>
     <div>X: <strong>${positionECI.x.toFixed(3)}</strong> km</div>
     <div>Y: <strong>${positionECI.y.toFixed(3)}</strong> km</div>
     <div>Z: <strong>${positionECI.z.toFixed(3)}</strong> km</div>
     `;
+    */
 
     divInfo3.innerHTML = `
     <div>Satellite</div>
-    <div>lat: <strong>${satelliteGd.latitude.toFixed(3)}</strong>°</div>
-    <div>long: <strong>${satelliteGd.longitude.toFixed(3)}</strong>°</div>
-    <div>alt: <strong>${satelliteGd.height.toFixed(3)}</strong> km</div>
+    <div>lat: <strong>${satellite.geodeticPosition.latitude.toFixed(3)}</strong>°</div>
+    <div>long: <strong>${satellite.geodeticPosition.longitude.toFixed(3)}</strong>°</div>
+    <div>alt: <strong>${satellite.geodeticPosition.height.toFixed(3)}</strong> km</div>
     `;
 
 
@@ -133,22 +114,3 @@ window.addEventListener('resize', () => {
     world.wegGLRenderer.setSize(window.innerWidth, window.innerHeight);
     world.labelRenderer.setSize(window.innerWidth, window.innerHeight);
 });
-
-
-
-
-// R : Rayon de votre Terre 3D + Altitude du satellite
-// lat : Latitude en degrés (-90 à 90)
-// lon : Longitude en degrés (-180 à 180)
-// Inversion d'axe : satellite.js (Z = Nord) -> Three.js (Y = Nord)
-function latLonToVector3(lat, lon, radius) {
-    const phi = (90 - lat) * (Math.PI / 180);
-    const theta = (lon + 180) * (Math.PI / 180);
-
-    const x = -(radius * Math.sin(phi) * Math.sin(theta));
-    const y = radius * Math.cos(phi);
-    const z = radius * Math.sin(phi) * Math.cos(theta);
-
-    return new THREE.Vector3(x, y, z);
-}
-
