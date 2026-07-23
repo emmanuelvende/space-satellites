@@ -38,18 +38,11 @@ document.getElementById("toggleGraticule")
 document.getElementById("toggleECI")
     .addEventListener("click", () => world.toggleECIAxes());
 
+document.getElementById("toggleECF")
+    .addEventListener("click", () => earth.toggleECFAxes());
 
 
 
-// ==========================================
-// --- REPERE ECF (Tourne avec la Terre) ---
-// ==========================================
-// On crée un deuxième AxesHelper. Pour le différencier du ECI, 
-// on le fait un peu plus court (9000 km)
-const axesHelperECF = new THREE.AxesHelper(9000);
-
-// TRÈS IMPORTANT : On l'ajoute à "earth", pas à "scene" !
-earth.mesh.add(axesHelperECF);
 
 
 // --- LE SATELLITE ---

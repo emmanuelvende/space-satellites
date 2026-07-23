@@ -23,6 +23,7 @@ export class Earth {
         this.createEquator();
         this.createGrid();
         this.createMeridiansParallels();
+        this.setupECFAxes();
     }
 
     createEquator() {
@@ -106,4 +107,12 @@ export class Earth {
         this.parallel45NMesh.visible = !this.parallel45NMesh.visible;
     }
 
+    setupECFAxes() {
+        this.ECFAxes = new THREE.AxesHelper(this.radius + 3000);
+        this.mesh.add(this.ECFAxes);
+    }
+
+    toggleECFAxes() {
+        this.ECFAxes.visible = !this.ECFAxes.visible;
+    }
 }
