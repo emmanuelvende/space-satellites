@@ -37,7 +37,6 @@ document.getElementById("toggleGrid")
 document.getElementById("toggleGraticule")
     .addEventListener("click", () => earth.toggleMeridiansParallels());
 
-
 document.getElementById("toggleECF")
     .addEventListener("click", () => earth.toggleECFAxes());
 
@@ -83,34 +82,16 @@ function animate() {
     <div>NORAD: <strong>${ommWorldview3.NORAD_CAT_ID}</strong></div>
     `;
 
-    /*
-    divInfo2.innerHTML = `
-    <div>ECI (Earth Centered Inertial):</div>
-    <div>X: <strong>${positionECI.x.toFixed(3)}</strong> km</div>
-    <div>Y: <strong>${positionECI.y.toFixed(3)}</strong> km</div>
-    <div>Z: <strong>${positionECI.z.toFixed(3)}</strong> km</div>
-    `;
-    */
 
-    divInfo3.innerHTML = `
+    divInfo2.innerHTML = `
     <div>Satellite</div>
     <div>lat: <strong>${satellite.geodeticPosition.latitude.toFixed(3)}</strong>°</div>
     <div>long: <strong>${satellite.geodeticPosition.longitude.toFixed(3)}</strong>°</div>
     <div>alt: <strong>${satellite.geodeticPosition.height.toFixed(3)}</strong> km</div>
     `;
 
+    world.updateControlsAndRender();
 
-    world.orbitControls.update();
-    world.wegGLRenderer.render(world.scene, world.camera);
-    world.labelRenderer.render(world.scene, world.camera);
 }
 
 animate();
-
-// --- 7. REDIMENSIONNEMENT FENÊTRE ---
-window.addEventListener('resize', () => {
-    world.camera.aspect = window.innerWidth / window.innerHeight;
-    world.camera.updateProjectionMatrix();
-    world.wegGLRenderer.setSize(window.innerWidth, window.innerHeight);
-    world.labelRenderer.setSize(window.innerWidth, window.innerHeight);
-});

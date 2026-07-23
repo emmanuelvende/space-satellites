@@ -10,6 +10,8 @@ export class World {
         this.setUpWebGLRenderer();
         this.setupLabelRenderer();
 
+        this.setupWindowResizing();
+
         this.setupCamera();
         this.setupOrbitControls();
 
@@ -78,5 +80,20 @@ export class World {
         this.ECIAxes.visible = !this.ECIAxes.visible;
         this.ECILabelN.visible = !this.ECILabelN.visible;
         this.ECILabelX.visible = !this.ECILabelX.visible;
+    }
+
+    setupWindowResizing() {
+        window.addEventListener('resize', () => {
+            this.camera.aspect = window.innerWidth / window.innerHeight;
+            this.camera.updateProjectionMatrix();
+            this.wegGLRenderer.setSize(window.innerWidth, window.innerHeight);
+            this.labelRenderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    }
+
+    updateControlsAndRender() {
+        this.orbitControls.update();
+        this.wegGLRenderer.render(this.scene, this.camera);
+        this.labelRenderer.render(this.scene, this.camera);
     }
 }
