@@ -7,10 +7,12 @@ export class World {
 
     constructor() {
         this.setupScene();
-        this.setupCamera();
         this.setUpWebGLRenderer();
-        this.setupOrbitControls();
         this.setupLabelRenderer();
+
+        this.setupCamera();
+        this.setupOrbitControls();
+        
         this.setupAmbientLight();
         this.setupECIAxes();
 
