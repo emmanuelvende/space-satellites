@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer } from 'three/addons/renderers/CSS2DRenderer.js';
+import { createLabel } from './label2d.js';
 
 export class World {
 
@@ -11,6 +12,8 @@ export class World {
         this.setupOrbitControls();
         this.setupLabelRenderer();
         this.setupAmbientLight();
+        this.setupECIAxes();
+
     }
 
     setupScene() {
@@ -49,5 +52,24 @@ export class World {
     setupAmbientLight() {
         const ambientLight = new THREE.AmbientLight(0x808080, 0.3);
         this.scene.add(ambientLight);
+    }
+
+    setupECIAxes() {
+        this.ECIAxes = new THREE.AxesHelper(50000);
+        this.scene.add(this.ECIAxes);
+
+        this.ECILabelN = createLabel('ECI North (Y)', '#00ff00');
+        this.ECILabelN.position.set(0, 12500, 0);
+        this.ECIAxes.add(this.ECILabelN);
+
+        this.ECILabelX = createLabel('ECI 0° (X)', '#ff0000');
+        this.ECILabelX.position.set(12500, 0, 0);
+        this.ECIAxes.add(this.ECILabelX);
+    }
+
+    toggleECIAxes() {
+        this.ECIAxes.visible = !this.ECIAxes.visible;
+        this.ECILabelN.visible = !this.ECILabelN.visible;
+        this.ECILabelX.visible = !this.ECILabelX.visible;
     }
 }

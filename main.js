@@ -35,20 +35,8 @@ document.getElementById("toggleGrid")
 document.getElementById("toggleGraticule")
     .addEventListener("click", () => earth.toggleMeridiansParallels());
 
-// ==========================================
-// --- REPÈRE ECI (Axes X, Y, Z) ---
-// ==========================================
-const axesHelper = new THREE.AxesHelper(50000);
-world.scene.add(axesHelper);
-
-const labelN = createLabel('ECI NORD (Y)', '#00ff00');
-labelN.position.set(0, 12500, 0); // Placé juste au bout de l'axe vert
-world.scene.add(labelN);
-
-// Étiquette pour l'axe Vernal (X)
-const labelX = createLabel('ECI X (0°)', '#ff0000');
-labelX.position.set(12500, 0, 0);
-world.scene.add(labelX);
+document.getElementById("toggleECI")
+    .addEventListener("click", () => world.toggleECIAxes());
 
 
 
